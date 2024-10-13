@@ -1,6 +1,8 @@
 import telebot
 from config import TOKEN, TIKERS
-from extensions import APIException, Currency
+from extensions import (APIException,
+                        Currency,
+                        set_declensions)
 
 bot = telebot.TeleBot(token=TOKEN)
 
@@ -51,12 +53,16 @@ def converting(message) -> None:
             raise APIException('Неправильный формат введенной информации')
         base, quote, amount = message.text.lower().split(' ')
         total_result = Currency().get_price(base, quote, amount)
-    except APIException as e:
-        bot.reply_to(message, text=f'Введенная вами {e} не может быть обработана{message}')
+
+    except APIException:
+        bot.reply_to(message, text=f'Введенная вами {message.text} не может быть обработана '
+                                   f'воспользуйтесь командой /help')
     except Exception as e:
         bot.reply_to(message, f'Ошибка со стороны сервера {e}')
     else:
-        bot.reply_to(message, text=f'Стоимость {amount} {base} в {quote} - {round(total_result, 2)}')
+        bot.reply_to(message, text=f'Стоимость {set_declensions(num=amount,
+                                                                currency_base=base,
+                                                                currency_quote=quote)} - {round(total_result, 2)}')
 
 
 if __name__ == '__main__':
